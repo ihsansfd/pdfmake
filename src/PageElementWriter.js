@@ -73,6 +73,8 @@ class PageElementWriter extends ElementWriter {
 		const previousPage = this.context().getCurrentPage();
 		let previousColumnState = null;
 
+		// Normal column groups (tables, columns) need their X position translated
+		// to the new page's margins after the page break has been emitted.
 		if (previousPage && this.context().snapshots.length > 0 && !this.context().getSnakingSnapshot()) {
 			previousColumnState = {
 				x: this.context().x,
@@ -91,6 +93,8 @@ class PageElementWriter extends ElementWriter {
 				rep.insertedOnPages[this.context().page] = true;
 				let fragment = rep;
 
+				// Table headers are captured with the original page's left margin.
+				// Rebase them so the repeatable fragment follows the current page margins.
 				if (rep.pageMarginLeft !== undefined && this.context().getCurrentPage().pageMargins) {
 					fragment = Object.assign({}, rep, {
 						xOffset: this.context().getCurrentPage().pageMargins.left - rep.pageMarginLeft

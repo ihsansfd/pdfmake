@@ -163,7 +163,9 @@ class TableProcessor {
 		this.rowPaddingTop = this.layout.paddingTop(rowIndex, this.tableNode);
 		this.bottomLineWidth = this.layout.hLineWidth(rowIndex + 1, this.tableNode);
 		this.rowPaddingBottom = this.layout.paddingBottom(rowIndex, this.tableNode);
-		let currentPage = writer.context().getCurrentPage();
+		const currentPage = writer.context().getCurrentPage();
+		// Row borders are drawn later in endRow, potentially on a different page.
+		// Keep the row's offset from the page margin so it can be reanchored safely.
 		this.rowXOffset = currentPage && currentPage.pageMargins ? writer.context().x - currentPage.pageMargins.left : writer.context().x;
 
 		this.rowCallback = this.onRowBreak(rowIndex, writer);
@@ -465,6 +467,8 @@ class TableProcessor {
 
 			const currentPage = writer.context().getCurrentPage();
 			if (currentPage && currentPage.pageMargins) {
+				// Broken rows reuse the same column geometry on the next page, but their
+				// absolute X must be recalculated from that page's margins.
 				writer.context().x = currentPage.pageMargins.left + this.rowXOffset;
 				writer.context().availableWidth = currentPage.pageSize.width - writer.context().x - currentPage.pageMargins.right;
 			}

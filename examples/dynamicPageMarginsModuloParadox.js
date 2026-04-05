@@ -21,6 +21,9 @@ var docDefinition = {
 			return { left: 40, top: 40, right: 40, bottom: 40 };
 		}
 
+		// An intentionally paradoxical case with pageCount = 1 every page
+		// satisfies currentPage % pageCount === 0, so the callback can flip the
+		// document between one-page and two-page layouts across passes.
 		if (currentPage % pageCount === 0) {
 			return { left: 40, bottom: 40, right: 40, top: 140 };
 		}

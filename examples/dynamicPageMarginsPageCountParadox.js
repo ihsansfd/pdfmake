@@ -17,6 +17,8 @@ var docDefinition = {
 	pageMargins: function (currentPage, pageCount) {
 		marginCalls.push({ currentPage: currentPage, pageCount: pageCount });
 
+		// This is intentionally paradoxical: changing margins based on the assumed
+		// total page count can change pagination, which changes pageCount again.
 		if (pageCount % 2 === 1) {
 			return { left: 40, bottom: 40, right: 40, top: 140 };
 		}

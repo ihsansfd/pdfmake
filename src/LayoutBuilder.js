@@ -180,6 +180,8 @@ class LayoutBuilder {
 				if (!pageMarginWarned) {
 					let cycleStartIndex = pageMarginAssumptionOrder.indexOf(nextPagesCount);
 					if (cycleStartIndex !== -1) {
+						// A repeated assumed page count means the callback is feeding
+						// pagination back into itself (for example 1 -> 2 -> 1 -> 2).
 						warnAboutPageMarginCycle();
 						pageMarginWarned = true;
 					}

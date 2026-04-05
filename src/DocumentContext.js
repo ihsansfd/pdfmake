@@ -383,6 +383,9 @@ class DocumentContext extends EventEmitter {
 			return;
 		}
 
+		// Column snapshots store absolute X coordinates from the previous page.
+		// When margins change per page, we must preserve the offset from the left
+		// margin instead of reusing the old absolute X.
 		let previousPageMargins = previousColumnState.pageMargins || { left: 0 };
 		let translateX = x => currentPage.pageMargins.left + (x - previousPageMargins.left);
 		let currentState = {
