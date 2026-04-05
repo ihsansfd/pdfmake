@@ -70,48 +70,47 @@ class PageElementWriter extends ElementWriter {
 	}
 
 	moveToNextPage(pageOrientation) {
-		let context = this.context();
-		let previousPage = context.getCurrentPage();
+		let previousPage = this.context().getCurrentPage();
 		let previousColumnState = null;
 
-		if (previousPage && context.snapshots.length > 0 && !context.getSnakingSnapshot()) {
+		if (previousPage && this.context().snapshots.length > 0 && !this.context().getSnakingSnapshot()) {
 			previousColumnState = {
-				x: context.x,
-				availableWidth: context.availableWidth,
+				x: this.context().x,
+				availableWidth: this.context().availableWidth,
 				pageMargins: previousPage.pageMargins
 			};
 		}
 
-		let nextPage = context.moveToNextPage(pageOrientation);
+		let nextPage = this.context().moveToNextPage(pageOrientation);
 
 		// moveToNextPage is called multiple times for table, because is called for each column
 		// and repeatables are inserted only in the first time. If columns are used, is needed
 		// call for table in first column and then for table in the second column (is other repeatables).
 		this.repeatables.forEach(function (rep) {
-			if (rep.insertedOnPages[context.page] === undefined) {
-				rep.insertedOnPages[context.page] = true;
+			if (rep.insertedOnPages[this.context().page] === undefined) {
+				rep.insertedOnPages[this.context().page] = true;
 				let fragment = rep;
 
-				if (rep.pageMarginLeft !== undefined && context.getCurrentPage().pageMargins) {
+				if (rep.pageMarginLeft !== undefined && this.context().getCurrentPage().pageMargins) {
 					fragment = Object.assign({}, rep, {
-						xOffset: context.getCurrentPage().pageMargins.left - rep.pageMarginLeft
+						xOffset: this.context().getCurrentPage().pageMargins.left - rep.pageMarginLeft
 					});
 				}
 
 				this.addFragment(fragment, true);
 			} else {
-				context.moveDown(rep.height);
+				this.context().moveDown(rep.height);
 			}
 		}, this);
 
 		this.emit('pageChanged', {
 			prevPage: nextPage.prevPage,
 			prevY: nextPage.prevY,
-			y: context.y
+			y: this.context().y
 		});
 
 		if (previousColumnState) {
-			context.restoreColumnStateAfterPageBreak(previousColumnState);
+			this.context().restoreColumnStateAfterPageBreak(previousColumnState);
 		}
 
 		return nextPage;
