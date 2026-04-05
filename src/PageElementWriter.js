@@ -70,25 +70,51 @@ class PageElementWriter extends ElementWriter {
 	}
 
 	moveToNextPage(pageOrientation) {
-		let nextPage = this.context().moveToNextPage(pageOrientation);
+		let context = this.context();
+		let previousPage = context.getCurrentPage();
+		let previousColumnState = null;
+
+		if (previousPage && context.snapshots.length > 0 && !context.getSnakingSnapshot()) {
+			previousColumnState = {
+				x: context.x,
+				availableWidth: context.availableWidth,
+				pageMargins: previousPage.pageMargins
+			};
+		}
+
+		let nextPage = context.moveToNextPage(pageOrientation);
 
 		// moveToNextPage is called multiple times for table, because is called for each column
 		// and repeatables are inserted only in the first time. If columns are used, is needed
 		// call for table in first column and then for table in the second column (is other repeatables).
 		this.repeatables.forEach(function (rep) {
-			if (rep.insertedOnPages[this.context().page] === undefined) {
-				rep.insertedOnPages[this.context().page] = true;
-				this.addFragment(rep, true);
+			if (rep.insertedOnPages[context.page] === undefined) {
+				rep.insertedOnPages[context.page] = true;
+				let fragment = rep;
+
+				if (rep.pageMarginLeft !== undefined && context.getCurrentPage().pageMargins) {
+					fragment = Object.assign({}, rep, {
+						xOffset: context.getCurrentPage().pageMargins.left - rep.pageMarginLeft
+					});
+				}
+
+				this.addFragment(fragment, true);
 			} else {
-				this.context().moveDown(rep.height);
+				context.moveDown(rep.height);
 			}
 		}, this);
 
 		this.emit('pageChanged', {
 			prevPage: nextPage.prevPage,
 			prevY: nextPage.prevY,
-			y: this.context().y
+			y: context.y
 		});
+
+		if (previousColumnState) {
+			context.restoreColumnStateAfterPageBreak(previousColumnState);
+		}
+
+		return nextPage;
 	}
 
 	addPage(pageSize, pageOrientation, pageMargin, customProperties = {}) {
@@ -149,6 +175,7 @@ class PageElementWriter extends ElementWriter {
 
 	currentBlockToRepeatable() {
 		let unbreakableContext = this.context();
+		let currentPage = unbreakableContext.getCurrentPage();
 		let rep = { items: [] };
 
 		unbreakableContext.pages[0].items.forEach(item => {
@@ -156,6 +183,7 @@ class PageElementWriter extends ElementWriter {
 		});
 
 		rep.xOffset = this.originalX;
+		rep.pageMarginLeft = currentPage && currentPage.pageMargins ? currentPage.pageMargins.left : 0;
 
 		//TODO: vectors can influence height in some situations
 		rep.height = unbreakableContext.y;

@@ -163,6 +163,8 @@ class TableProcessor {
 		this.rowPaddingTop = this.layout.paddingTop(rowIndex, this.tableNode);
 		this.bottomLineWidth = this.layout.hLineWidth(rowIndex + 1, this.tableNode);
 		this.rowPaddingBottom = this.layout.paddingBottom(rowIndex, this.tableNode);
+		let currentPage = writer.context().getCurrentPage();
+		this.rowXOffset = currentPage && currentPage.pageMargins ? writer.context().x - currentPage.pageMargins.left : writer.context().x;
 
 		this.rowCallback = this.onRowBreak(rowIndex, writer);
 		writer.addListener('pageChanged', this.rowCallback);
@@ -406,6 +408,8 @@ class TableProcessor {
 
 		let endingPage = writer.context().page;
 		let endingY = writer.context().y;
+		let endingX = writer.context().x;
+		let endingAvailableWidth = writer.context().availableWidth;
 
 		let xs = getLineXs();
 
@@ -457,6 +461,12 @@ class TableProcessor {
 				//TODO: buggy, availableHeight should be updated on every pageChanged event
 				// TableProcessor should be pageChanged listener, instead of processRow
 				this.reservedAtBottom = 0;
+			}
+
+			let currentPage = writer.context().getCurrentPage();
+			if (currentPage && currentPage.pageMargins) {
+				writer.context().x = currentPage.pageMargins.left + this.rowXOffset;
+				writer.context().availableWidth = currentPage.pageSize.width - writer.context().x - currentPage.pageMargins.right;
 			}
 
 			// Draw horizontal lines before the vertical lines so they are not overridden
@@ -572,6 +582,8 @@ class TableProcessor {
 
 		writer.context().page = endingPage;
 		writer.context().y = endingY;
+		writer.context().x = endingX;
+		writer.context().availableWidth = endingAvailableWidth;
 
 		let row = this.tableNode.table.body[rowIndex];
 		for (let i = 0, l = row.length; i < l; i++) {

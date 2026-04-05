@@ -1045,10 +1045,20 @@ class LayoutBuilder {
 		// If content did not break page, check if we should break by height
 		if (willBreakByHeight && !isUnbreakableRow && pageBreaks.length === 0) {
 			this.writer.context().moveDown(this.writer.context().availableHeight);
+			let pageBreakData;
 			if (snakingColumns) {
 				this.snakingAwarePageBreak();
 			} else {
-				this.writer.moveToNextPage();
+				pageBreakData = this.writer.moveToNextPage();
+			}
+
+			if (pageBreakData) {
+				pageBreaks.push({
+					prevPage: pageBreakData.prevPage,
+					prevY: pageBreakData.prevY,
+					y: this.writer.context().y,
+					rowIndex: rowIndex
+				});
 			}
 		}
 

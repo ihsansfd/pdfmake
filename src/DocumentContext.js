@@ -373,6 +373,40 @@ class DocumentContext extends EventEmitter {
 		}
 	}
 
+	restoreColumnStateAfterPageBreak(previousColumnState) {
+		if (!previousColumnState || this.snapshots.length === 0) {
+			return;
+		}
+
+		let currentPage = this.getCurrentPage();
+		if (!currentPage || !currentPage.pageMargins) {
+			return;
+		}
+
+		let previousPageMargins = previousColumnState.pageMargins || { left: 0 };
+		let translateX = x => currentPage.pageMargins.left + (x - previousPageMargins.left);
+		let currentState = {
+			x: translateX(previousColumnState.x),
+			y: this.y,
+			page: this.page,
+			availableHeight: this.availableHeight,
+			availableWidth: previousColumnState.availableWidth
+		};
+
+		this.x = currentState.x;
+		this.availableWidth = previousColumnState.availableWidth;
+
+		for (let i = 0; i < this.snapshots.length; i++) {
+			let snapshot = this.snapshots[i];
+			snapshot.x = translateX(snapshot.x);
+			snapshot.y = this.y;
+			snapshot.page = this.page;
+			snapshot.availableHeight = this.availableHeight;
+
+			snapshot.bottomMost = bottomMostContext(currentState, snapshot.bottomMost || currentState);
+		}
+	}
+
 	addMargin(left, right) {
 		this.x += left;
 		this.availableWidth -= left + (right || 0);
