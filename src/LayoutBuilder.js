@@ -159,14 +159,34 @@ class LayoutBuilder {
 			});
 		}
 
+		function warnAboutPageMarginCycle() {
+			if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+				console.warn('Non-convergent dynamic pageMargins detected. Layout may not be rendered as expected semantically.' 
+					+ ' Look at the docs on how to apply dynamic page margins correctly to avoid this warning.'
+				);
+			}
+		}
+
 		const MAX_LAYOUT_PASSES = 10;
 		let pagesCount = 0;
 		let layoutPass = 0;
 		let result = this.tryLayoutDocument(docStructure, pdfDocument, styleDictionary, defaultStyle, background, header, footer, watermark, pagesCount);
+		let pageMarginAssumptionOrder = [pagesCount];
+		let pageMarginWarned = false;
 
 		while (++layoutPass < MAX_LAYOUT_PASSES) {
 			if (result.pageMarginFunctionUsed && pagesCount !== result.pages.length) {
-				pagesCount = result.pages.length;
+				let nextPagesCount = result.pages.length;
+				if (!pageMarginWarned) {
+					let cycleStartIndex = pageMarginAssumptionOrder.indexOf(nextPagesCount);
+					if (cycleStartIndex !== -1) {
+						warnAboutPageMarginCycle();
+						pageMarginWarned = true;
+					}
+				}
+
+				pagesCount = nextPagesCount;
+				pageMarginAssumptionOrder.push(pagesCount);
 				resetXYs(result);
 				result = this.tryLayoutDocument(docStructure, pdfDocument, styleDictionary, defaultStyle, background, header, footer, watermark, pagesCount);
 				continue;
