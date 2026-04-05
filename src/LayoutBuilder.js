@@ -1364,6 +1364,17 @@ class LayoutBuilder {
 			}
 
 			let positions = this.writer.addLine(line);
+			if (!positions && this.writer.context().inSnakingColumns() && !this.writer.context().isInNestedNonSnakingGroup()) {
+				this.snakingAwarePageBreak(node.pageOrientation);
+
+				if (line.inlines && line.inlines.length > 0) {
+					node._inlines.unshift(...line.inlines);
+				}
+
+				line = this.buildNextLine(node);
+				continue;
+			}
+
 			node.positions.push(positions);
 			line = this.buildNextLine(node);
 			if (line) {

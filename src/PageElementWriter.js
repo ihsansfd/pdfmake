@@ -22,6 +22,12 @@ class PageElementWriter extends ElementWriter {
 	}
 
 	addLine(line, dontUpdateContextPosition, index) {
+		// Outer snaking text needs LayoutBuilder to rebuild the line after a column/page
+		// break so the first carried line wraps to the new column width correctly.
+		if (this.context().inSnakingColumns() && !this.context().isInNestedNonSnakingGroup()) {
+			return super.addLine(line, dontUpdateContextPosition, index);
+		}
+
 		return this._fitOnPage(() => super.addLine(line, dontUpdateContextPosition, index));
 	}
 
