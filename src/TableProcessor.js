@@ -463,7 +463,7 @@ class TableProcessor {
 				this.reservedAtBottom = 0;
 			}
 
-			let currentPage = writer.context().getCurrentPage();
+			const currentPage = writer.context().getCurrentPage();
 			if (currentPage && currentPage.pageMargins) {
 				writer.context().x = currentPage.pageMargins.left + this.rowXOffset;
 				writer.context().availableWidth = currentPage.pageSize.width - writer.context().x - currentPage.pageMargins.right;

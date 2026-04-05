@@ -525,19 +525,18 @@ class DocumentContext extends EventEmitter {
 		}
 
 		let currentMargin = pageMargin || this.pageMargins;
-		let evaluatedMargin = currentMargin;
 
 		if (typeof currentMargin === 'function') {
 			this.pageMarginFunctionUsed = true;
-			evaluatedMargin = normalizePageMargin(currentMargin(this.pages.length + 1, this.pageCount, pageSize));
+			currentMargin = normalizePageMargin(currentMargin(this.pages.length + 1, this.pageCount, pageSize));
 		}
 
-		if (evaluatedMargin !== undefined && evaluatedMargin !== null) {
-			this.x = evaluatedMargin.left;
-			this.availableWidth = pageSize.width - evaluatedMargin.left - evaluatedMargin.right;
+		if (currentMargin !== undefined && currentMargin !== null) {
+			this.x = currentMargin.left;
+			this.availableWidth = pageSize.width - currentMargin.left - currentMargin.right;
 		}
 
-		let page = { items: [], pageSize: pageSize, pageMargins: evaluatedMargin, customProperties: customProperties };
+		let page = { items: [], pageSize: pageSize, pageMargins: currentMargin, customProperties: customProperties };
 		this.pages.push(page);
 		this.backgroundLength.push(0);
 		this.page = this.pages.length - 1;

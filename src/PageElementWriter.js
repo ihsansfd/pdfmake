@@ -70,7 +70,7 @@ class PageElementWriter extends ElementWriter {
 	}
 
 	moveToNextPage(pageOrientation) {
-		let previousPage = this.context().getCurrentPage();
+		const previousPage = this.context().getCurrentPage();
 		let previousColumnState = null;
 
 		if (previousPage && this.context().snapshots.length > 0 && !this.context().getSnakingSnapshot()) {
